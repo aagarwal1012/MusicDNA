@@ -21,6 +21,19 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+
+        checkTypes {
+            javaCompileOptions.annotationProcessorOptions.
+                    classNames.add("org.checkerframework.checker.androidresource.AndroidResourceChecker")
+            // You can pass options like so:
+            // javaCompileOptions.annotationProcessorOptions.arguments.put("warns", "")
+        }
+    }
+}
+
+configurations {
+    checkerFrameworkAnnotatedJDK {
+        description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
     }
 }
 
@@ -63,4 +76,18 @@ dependencies {
     testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
     debugCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
     releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+
+    compile files('C:/Users/Ayush/ayush_files/gsoc/the-checker-framework/checker-framework/checker/dist/checker-qual.jar')
+    annotationProcessor files('C:/Users/Ayush/ayush_files/gsoc/the-checker-framework/checker-framework/checker/dist/checker.jar')
+    checkerFrameworkAnnotatedJDK files('C:/Users/Ayush/ayush_files/gsoc/the-checker-framework/checker-framework/checker/dist/jdk8.jar')
+}
+
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile).all { compile ->
+        if (compile.name.contains("CheckTypes")) {
+            compile.options.compilerArgs += [
+                    "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+            ]
+        }
+    }
 }
